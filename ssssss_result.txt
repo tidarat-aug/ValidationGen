@@ -1,0 +1,439 @@
+create or replace PROCEDURE P_ssssssPF_VALIDATION
+IS
+  -- define veriable and initailize
+  CURSOR CS1
+  IS
+    SELECT *
+    FROM ssssssPF;
+  
+  /*veriable must use for Log*/
+  v_proclog_rec DCPRCLOG%ROWTYPE;
+  v_process_seq NUMBER(8);
+  v_totalrec    NUMBER(8);
+  v_accpt       NUMBER(8);
+  v_rejct       NUMBER(8);
+  v_iserror     NUMBER(1);
+
+  v_error_seq    NUMBER(8);
+  v_strerrorcode VARCHAR2(100 CHAR);
+  v_strerrordesc VARCHAR2(2000 CHAR);
+  v_cnt          NUMBER(20);
+  v_isdt         TIMESTAMP(6);
+
+  v_uniq      NUMBER(18);
+  v_sadfasd;
+
+
+
+  
+  
+  
+    PROCEDURE P_ssssssPF_ERROR_LOG(NPROCESSSEQ  IN NUMBER,
+                               NERRORSEQ    IN NUMBER,
+                               STRERRORCODE IN VARCHAR2,
+                               STRERRORDESC IN VARCHAR2,
+                               UNIQUENUM    IN NUMBER,                               
+                               sadfasd IN NUMBER) IS
+  
+    v_errdtl_rec ssssssERRDTL%ROWTYPE;
+  
+  BEGIN
+    v_errdtl_rec.nprocessseq  := NPROCESSSEQ;
+    v_errdtl_rec.nerrorseq    := NERRORSEQ;
+    v_errdtl_rec.strprogname  := 'P_ssssssPF_VALIDATION';
+    v_errdtl_rec.strtablename := 'ssssssPF';
+    v_errdtl_rec.dtprocess    := sysdate;
+    v_errdtl_rec.strerrorcode := strerrorcode;
+    v_errdtl_rec.strerrordesc := strerrordesc;
+    v_errdtl_rec.uniquenum    := uniquenum;    
+    v_errdtl_rec.sadfasd := sadfasd;
+
+  
+    INSERT INTO ssssssERRDTL VALUES v_errdtl_rec;
+    COMMIT;
+  END;
+  
+  
+  
+  
+
+
+
+
+
+----------- Call print error 
+    PROCEDURE P_PRINT_ERROR IS
+    BEGIN
+        P_ZACMPF_ERROR_LOG(v_process_seq,
+                              v_error_seq,
+                              v_strerrorcode,
+                              v_strerrordesc,
+                              v_uniq,
+                              v_inchdrnum,
+                              v_tranno,
+                              v_batctrcde,
+                              v_sacscode,
+                              v_sacstyp,
+                              v_glcode);
+    END;
+
+
+----------- validate null with expect value 
+    PROCEDURE P_validate_null_expectvalue(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2,
+                               EVALUE    IN VARCHAR2
+                               ) IS
+    BEGIN
+      IF trim(NVALUE) is not null THEN
+        IF trim(NVALUE)=EVALUE THEN
+          NULL;
+        ELSE
+          v_error_seq    := v_error_seq + 1;
+          v_iserror      := 1;
+          v_strerrorcode := FNAME||' must be '||EVALUE||'';
+          v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||':' || trim(EVALUE) || ' is not '||EVALUE||' ';
+          P_PRINT_ERROR();
+        END IF;
+      ELSE
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      END IF;
+    END;
+
+
+
+----------- validate null with expect multiple value 
+    PROCEDURE P_validate_null_expectvalues(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2,
+                               EVALUE    IN VARCHAR2,
+                               EVALUE2    IN VARCHAR2
+                               ) IS
+    BEGIN
+      IF trim(NVALUE) is not null THEN
+        IF trim(NVALUE)=EVALUE or trim(NVALUE)=EVALUE2 THEN
+          NULL;
+        ELSE
+          v_error_seq    := v_error_seq + 1;
+          v_iserror      := 1;
+          v_strerrorcode := FNAME||' must be '||EVALUE||'';
+          v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||':' || trim(NVALUE) || ' is not '||EVALUE||' or '||EVALUE2;
+          P_PRINT_ERROR();
+        END IF;
+      ELSE
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      END IF;
+    END;
+
+
+----------- validate null 
+    PROCEDURE P_validate_null(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2
+                               ) IS
+    BEGIN
+      IF trim(NVALUE) is not null THEN
+        null;
+      ELSE
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      END IF;
+    END;
+
+
+----------- validate null with expect value in table template
+    PROCEDURE P_validate_null_intemplate(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2,
+                              NTABLE IN VARCHAR2
+                               ) IS
+    BEGIN
+      if trim(NVALUE) is not null then
+        SELECT nvl(COUNT(1), 0) cnt
+          INTO v_cnt
+          FROM DESCPF dc
+         WHERE dc.descpfx = 'IT'
+           AND dc.desccoy IN ('2', '9')
+           AND dc.language = 'E'
+           AND trim(dc.desctabl) = NTABLE
+           AND trim(dc.descitem) = NVALUE;
+      
+        IF v_cnt = 0 THEN
+          v_error_seq    := v_error_seq + 1;
+          v_iserror      := 1;
+          v_strerrorcode := FNAME||' must be  in '||NTABLE;
+          v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': ' ||
+                            NVALUE || ' not in '||NTABLE;
+          P_PRINT_ERROR();
+        END IF;
+      else
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      end if;
+    END;
+    
+    
+
+----------- validate null and pattern CCYY between 2000 and 2015
+    PROCEDURE P_validate_null_CCYY(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2
+                               ) IS
+    BEGIN
+      if trim(NVALUE) is not null then
+        if trim(NVALUE) between 2000 and 2015 then
+          null;
+        else
+          v_error_seq    := v_error_seq + 1;
+          v_iserror      := 1;
+          v_strerrorcode := FNAME||' must be ''CCYY'' format';
+          v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': ' || trim(NVALUE) || ' is not format ''CCYY'' ';
+          P_PRINT_ERROR();
+        end if;
+      else
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      end if;      
+    END;
+
+----------- validate null and pattern 'CCYYMMDD'
+    PROCEDURE P_validate_null_CCYYMMDD(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2
+                               ) IS
+    BEGIN
+      if trim(NVALUE) is not null then
+        BEGIN
+          SELECT TO_DATE(NVALUE, 'YYYYMMDD')
+            INTO v_isdt
+            FROM DUAL;
+        EXCEPTION
+          WHEN OTHERS THEN
+            v_error_seq    := v_error_seq + 1;
+            v_iserror      := 1;
+            v_strerrorcode := FNAME||' format value must be CCYYMMDD';
+            v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': ' ||
+                              NVALUE ||
+                              ' format is not CCYYMMDD';
+            P_PRINT_ERROR();
+        END;
+      else
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      end if;
+    END;
+    
+    
+----------- validate null and pattern 'CCMMDD'
+    PROCEDURE P_validate_null_CCMMDD(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2
+                               ) IS
+    BEGIN
+      IF trim(NVALUE) is not null THEN
+        BEGIN
+          SELECT TO_DATE(lpad(trim(NVALUE), 6, '0'), 'YYMMDD')
+            INTO v_isdt
+            FROM DUAL;
+        EXCEPTION
+          WHEN OTHERS THEN
+            v_error_seq    := v_error_seq + 1;
+            v_iserror      := 1;
+            v_strerrorcode := FNAME||' format value must be CCMMDD';
+            v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': ' ||
+                              Trim(NVALUE) || ' format is not CCMMDD';
+            P_PRINT_ERROR();
+        END;
+      ELSE
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      END IF;
+    END;
+
+
+----------- validate null and pattern 'MM' check between 1 and 12
+    PROCEDURE P_validate_null_MM(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2
+                               ) IS
+    BEGIN
+      if trim(NVALUE) is not null then
+        if trim(NVALUE) between 1 and 12 then
+          null;
+        else
+          v_error_seq    := v_error_seq + 1;
+          v_iserror      := 1;
+          v_strerrorcode := FNAME||' must be ''MM'' format';
+          v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': ' || trim(NVALUE) || ' is not format ''MM'' ';
+          P_PRINT_ERROR();
+        end if;
+      else
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      end if;
+    END;
+
+
+
+
+----------- validate null and pattern 'HHMMSS'
+    PROCEDURE P_validate_null_HHMMSS(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2
+                               ) IS
+    BEGIN
+      if trim(NVALUE) is not null then
+          BEGIN
+            SELECT to_date(LPAD(NVALUE, 6, '0'), 'HH24MISS')
+              inTO v_isdt
+              from dual;
+          EXCEPTION
+            WHEN OTHERS THEN
+              v_error_seq    := v_error_seq + 1;
+              v_iserror      := 1;
+              v_strerrorcode := FNAME||' format value must be HHMMSS';
+              v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq ||
+                                ' '||FNAME||': ' || NVALUE ||
+                                ' format is not HHMMSS';
+              P_PRINT_ERROR();
+          END;
+      else
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      end if;
+    END;
+
+
+
+
+----------- validate null and pattern length
+    PROCEDURE P_validate_null_length(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2,
+                              NLENGTH IN VARCHAR2
+                               ) IS
+    BEGIN
+      if  trim(NVALUE) is not null then
+        if length(trim(NVALUE))!=NLENGTH then
+          v_error_seq    := v_error_seq + 1;
+          v_iserror      := 1;
+          v_strerrorcode := FNAME||' must be '||NLENGTH||' digits';
+          v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' ' || FNAME || ': ' ||trim(NVALUE) || ' actual length = ' || length(trim(NVALUE)) || ' ';
+          P_PRINT_ERROR();
+        end if;
+      else
+        v_error_seq    := v_error_seq + 1;
+        v_iserror      := 1;
+        v_strerrorcode := FNAME||' can not be null';
+        v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': is null';
+        P_PRINT_ERROR();
+      end if;
+    END;
+
+
+
+
+----------- validateand timestamp
+    PROCEDURE P_validate_timestamp(
+                              NVALUE  IN VARCHAR2,
+                              FNAME IN VARCHAR2
+                               ) IS
+        BEGIN
+          SELECT NVALUE
+            INTO v_isdt
+            FROM DUAL;
+        EXCEPTION
+          WHEN OTHERS THEN
+            v_error_seq    := v_error_seq + 1;
+            v_iserror      := 1;
+            v_strerrorcode := FNAME||' format value must be timestamp';
+            v_strerrordesc := 'UNIQUE_NUMBER: ' || v_uniq || ' '||FNAME||': ' ||
+                              NVALUE ||
+                              ' format is not timestamp';
+            P_PRINT_ERROR();
+        END;
+BEGIN
+
+
+
+SELECT nvl(MAX(nprocesseq), 0) INTO v_process_seq FROM DCPRCLOG;
+  SELECT COUNT(1) cnt INTO v_totalrec FROM {tableName}PF;
+
+  v_process_seq              := v_process_seq + 1;
+  v_proclog_rec.nprocesseq   := v_process_seq;
+  v_proclog_rec.strprogname  := 'P_{tableName}PF_VALIDATION';
+  v_proclog_rec.strtablename := '{tableName}PF';
+  v_proclog_rec.ntotalrec    := v_totalrec;
+  v_proclog_rec.dtstart      := SYSDATE;
+  v_proclog_rec.nacceptrec   := 0;
+  v_proclog_rec.nrejectrec   := 0;
+  v_accpt                    := 0;
+  v_rejct                    := 0;
+
+  INSERT INTO DCPRCLOG VALUES v_proclog_rec;
+  COMMIT;
+
+  SELECT nvl(MAX(NERRORSEQ), 0) INTO v_error_seq FROM {tableName}ERRDTL;
+
+
+  FOR v_cs1_rec IN CS1
+  LOOP
+    --initial variable
+    v_uniq:=v_cs1_rec.UNIQUE_NUMBER;
+    {keyFields}
+
+    
+    v_iserror := 0;   
+    
+  
+  
+    {content}
+
+
+ 
+      IF v_iserror = 1 THEN   
+        v_rejct := v_rejct + 1;
+      ELSE
+        v_accpt := v_accpt + 1;
+      END IF;
+    END LOOP;
+    
+  v_proclog_rec.nacceptrec := v_accpt;
+  v_proclog_rec.nrejectrec := v_rejct;
+  v_proclog_rec.dtend      := SYSDATE;
+  UPDATE DCPRCLOG
+     SET nacceptrec = v_proclog_rec.nacceptrec,
+         nrejectrec = v_proclog_rec.nrejectrec,
+         dtend      = v_proclog_rec.dtend
+   WHERE nprocesseq = v_proclog_rec.nprocesseq;
+  COMMIT;
+  END P_{tableName}PF_VALIDATION;

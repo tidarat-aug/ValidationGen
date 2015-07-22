@@ -1,0 +1,19 @@
+PROCEDURE P_validate_null_expectvalue
+
+PROCEDURE P_validate_null_expectvalues
+
+PROCEDURE P_validate_null
+
+PROCEDURE P_validate_null_intemplate
+
+PROCEDURE P_validate_null_CCYY
+
+PROCEDURE P_validate_null_CCYYMMDD
+
+PROCEDURE P_validate_null_MM
+
+PROCEDURE P_validate_null_HHMMSS
+
+PROCEDURE P_validate_null_length
+
+PROCEDURE P_validate_timestamp

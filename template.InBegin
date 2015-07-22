@@ -1,0 +1,56 @@
+BEGIN
+
+
+
+SELECT nvl(MAX(nprocesseq), 0) INTO v_process_seq FROM DCPRCLOG;
+  SELECT COUNT(1) cnt INTO v_totalrec FROM {tableName}PF;
+
+  v_process_seq              := v_process_seq + 1;
+  v_proclog_rec.nprocesseq   := v_process_seq;
+  v_proclog_rec.strprogname  := 'P_{tableName}PF_VALIDATION';
+  v_proclog_rec.strtablename := '{tableName}PF';
+  v_proclog_rec.ntotalrec    := v_totalrec;
+  v_proclog_rec.dtstart      := SYSDATE;
+  v_proclog_rec.nacceptrec   := 0;
+  v_proclog_rec.nrejectrec   := 0;
+  v_accpt                    := 0;
+  v_rejct                    := 0;
+
+  INSERT INTO DCPRCLOG VALUES v_proclog_rec;
+  COMMIT;
+
+  SELECT nvl(MAX(NERRORSEQ), 0) INTO v_error_seq FROM {tableName}ERRDTL;
+
+
+  FOR v_cs1_rec IN CS1
+  LOOP
+    --initial variable
+    v_uniq:=v_cs1_rec.UNIQUE_NUMBER;
+    {keyFields}
+
+    
+    v_iserror := 0;   
+    
+  
+  
+    {content}
+
+
+ 
+      IF v_iserror = 1 THEN   
+        v_rejct := v_rejct + 1;
+      ELSE
+        v_accpt := v_accpt + 1;
+      END IF;
+    END LOOP;
+    
+  v_proclog_rec.nacceptrec := v_accpt;
+  v_proclog_rec.nrejectrec := v_rejct;
+  v_proclog_rec.dtend      := SYSDATE;
+  UPDATE DCPRCLOG
+     SET nacceptrec = v_proclog_rec.nacceptrec,
+         nrejectrec = v_proclog_rec.nrejectrec,
+         dtend      = v_proclog_rec.dtend
+   WHERE nprocesseq = v_proclog_rec.nprocesseq;
+  COMMIT;
+  END P_{tableName}PF_VALIDATION;
