@@ -45,7 +45,7 @@ public class ValidationService {
             addBeforeBegin();
             addProcedureFunction();
             addInBeginAndBottom();
-            ioService.writeFile(dataBuffer, stagingName + "_result.txt");
+            ioService.writeFile(dataBuffer, stagingName + "_result_korn.txt");
         } catch (IOException ex) {
             Logger.getLogger(ValidationService.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -79,7 +79,7 @@ public class ValidationService {
             transformErrorBegin = "v_errdtl_rec." + logkeys[0] + " := " + logkeys[0] + ";\n";
         }
         keyParameter = keyParameter.substring(0, keyParameter.length() - 1);
-        dataBuffer.append(ioService.readFile("template.beforeBegin")
+        dataBuffer.append(ioService.readFile("template.beforeBegin.korn")
                 .replaceAll("\\{tableName\\}", stagingName)
                 .replaceAll("\\{keyFields\\}", transformKey)
                 .replaceAll("\\{keyError\\}", transformError.substring(0, transformError.length() - 1))
@@ -88,15 +88,22 @@ public class ValidationService {
 
     private void addProcedureFunction() throws IOException {
         dataBuffer.append("\n");
-        dataBuffer.append(ioService.readFile("template.plFunction")
+        dataBuffer.append(ioService.readFile("template.plFunction.korn")
                 .replaceAll("\\{keyParameter\\}", keyParameter)
                 .replaceAll("\\{tableName\\}", stagingName));
     }
 
     public void addInBeginAndBottom() throws IOException {
         //{tableName},{keyFields},{content}
-        dataBuffer.append(ioService.readFile("template.InBegin").replaceAll("\\{tableName\\}", stagingName)
+        dataBuffer.append(ioService.readFile("template.InBegin.korn")
+                .replaceAll("\\{tableName\\}", stagingName)
+                .replaceAll("\\{content\\}", addContent())
                 .replaceAll("\\{keyFields\\}", keyFields));
+    }
+    
+    public String addContent(){
+        
+        return "";
     }
 
     public String getTemplatePath() {
