@@ -1,10 +1,24 @@
-value must be					#PROCEDURE P_validate_null_expectvalue
-value must be '+' or '-' 		#PROCEDURE P_validate_null_expectvalues
-Can not be null 				#PROCEDURE P_validate_null
-value must be in 				#PROCEDURE P_validate_null_intemplate
-format value must be 			#PROCEDURE P_validate_null_CCYY
-format value must be 			#PROCEDURE P_validate_null_CCYYMMDD
-format value must be 			#PROCEDURE P_validate_null_MM
-format value must be 			#PROCEDURE P_validate_null_HHMMSS
-digits	 						#PROCEDURE P_validate_null_length
-j 								#PROCEDURE P_validate_timestamp
+value must be					#expectvalue
+value must be '+' or '-' 		#expectvalues
+Can not be null 				#null
+value must be in 				#intemplate
+format must be 'CCYY'			#CCYY
+format must be 'CCYYMMDD'		#CCYYMMDD
+format must be 'CCMMDD'			#CCMMDD
+format must be 'MM' 			#MM
+format must be 'HHMMSS'			#HHMMSS
+digits	 						#length
+j 								#timestamp
+
+
+P_validate_null_length(v_cs1_rec.INCHDRNUM, 'INCHDRNUM', '10');
+P_validate_null(v_cs1_rec.TRANNO, 'TRANNO');
+P_validate_null_expectvalue(v_cs1_rec.RLDGCOY, 'RLDGCOY', '2');
+P_validate_null_expectvalues(v_cs1_rec.GLSIGN, 'GLSIGN', '+', '-');
+P_validate_null_intemplate(v_cs1_rec.SACSCODE, 'SACSCODE', 'T3616');
+P_validate_null_CCYY(v_cs1_rec.BATCACTYR, 'BATCACTYR');
+P_validate_null_MM(v_cs1_rec.BATCACTMN, 'BATCACTMN');
+P_validate_null_CCMMDD(v_cs1_rec.TRDT, 'TRDT');
+P_validate_null_CCYYMMDD(v_cs1_rec.EFFDATE, 'EFFDATE');
+P_validate_null_HHMMSS(v_cs1_rec.TRTM, 'TRTM');
+
