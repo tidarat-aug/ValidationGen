@@ -42,19 +42,16 @@ public class ValidationService {
             Sheet bookSheet = book.getSheetAt(0);
             Map<String, String> mapFunction = new HashMap<String, String>();
             mapFunction = ioService.readFunction("mapping.korn");
-            updateBeforeBegin();
-            updateInfunction();
+            addBeforeBegin();
+            addProcedureFunction();
+            addInBeginAndBottom();
             ioService.writeFile(dataBuffer, stagingName + "_result.txt");
         } catch (IOException ex) {
             Logger.getLogger(ValidationService.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private String readColumnValidation() {
-        return "";
-    }
-
-    private void updateBeforeBegin() throws IOException {
+    private void addBeforeBegin() throws IOException {
         dataBuffer.append(ioService.readFile("template.beforeBegin"));
         String transformKey = "";
         String transformError = "";
@@ -84,8 +81,17 @@ public class ValidationService {
                 .replaceAll("\\{keyError\\}", transformError.substring(0, transformError.length() - 1))
                 .replaceAll("\\{keyErrorBegin\\}", transformErrorBegin));
     }
+    
+    private void addProcedureFunction() throws IOException {
+        dataBuffer.append("\n");
+        
+        dataBuffer.append(ioService.readFile("template.plFunction")
+                .replaceAll("\\{tableName\\}", stagingName));
+        
+        
+    }
 
-    public void updateInfunction() throws IOException {
+    public void addInBeginAndBottom() throws IOException {
         //{tableName},{keyFields},{content}
         StringBuilder inFunctionKeep = new StringBuilder();
         inFunctionKeep.append(ioService.readFile("template.InBegin"));
@@ -98,7 +104,7 @@ public class ValidationService {
                 keyFields+="v_"+splitKey[0]+" := v_cs1_rec."+splitKey[0]+";\n";
             }
         } else {
-            
+            keyFields+="v_"+logField+" := v_cs1_rec."+logField+";\n";
         }     
         
         inFunctionKeep = new StringBuilder(inFunctionKeep.toString()
