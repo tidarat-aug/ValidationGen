@@ -1,10 +1,10 @@
-a#PROCEDURE P_validate_null_expectvalue
-b#PROCEDURE P_validate_null_expectvalues
-c#PROCEDURE P_validate_null
-d#PROCEDURE P_validate_null_intemplate
-e#PROCEDURE P_validate_null_CCYY
-f#PROCEDURE P_validate_null_CCYYMMDD
-g#PROCEDURE P_validate_null_MM
-h#PROCEDURE P_validate_null_HHMMSS
-i#PROCEDURE P_validate_null_length
-j#PROCEDURE P_validate_timestamp
+value must be					#PROCEDURE P_validate_null_expectvalue
+value must be '+' or '-' 		#PROCEDURE P_validate_null_expectvalues
+Can not be null 				#PROCEDURE P_validate_null
+value must be in 				#PROCEDURE P_validate_null_intemplate
+format value must be 			#PROCEDURE P_validate_null_CCYY
+format value must be 			#PROCEDURE P_validate_null_CCYYMMDD
+format value must be 			#PROCEDURE P_validate_null_MM
+format value must be 			#PROCEDURE P_validate_null_HHMMSS
+digits	 						#PROCEDURE P_validate_null_length
+j 								#PROCEDURE P_validate_timestamp

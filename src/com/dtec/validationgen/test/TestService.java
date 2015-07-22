@@ -19,30 +19,33 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * @author rikikun
  */
 public class TestService {
-    String abc="as";
-    
-    public static void main(String...args) throws IOException{
+
+    String abc = "as";
+
+    public static void main(String... args) throws IOException {
         System.out.println("agbc number(5)".split(" ")[1].toUpperCase().contains("R("));
-        System.out.println("number".toUpperCase().contains("NsUMBER") ? "NUMBER":"VARCHAR2");
-        TestService f=new TestService();
+        System.out.println("number".toUpperCase().contains("NsUMBER") ? "NUMBER" : "VARCHAR2");
+        TestService f = new TestService();
         f.changeString(f.abc);
         System.out.println(f.abc);
-        
+
         XSSFWorkbook book = new IoService().readExcel("work around.xlsx");
-            Map<String, String> mapFunction = new HashMap<String, String>();
-            Sheet bookSheet = book.getSheetAt(0);
-            Iterator<Row> rowIterator = bookSheet.rowIterator();
-            while(rowIterator.hasNext()){
-                Row row=rowIterator.next();
-                System.out.println(row.getCell(0).getStringCellValue());
-                if(row.getCell(0).getStringCellValue().trim()==null||row.getCell(0).getStringCellValue().trim()==""){
-                    break;
-                }
+        Map<String, String> mapFunction = new HashMap<String, String>();
+        Sheet bookSheet = book.getSheetAt(0);
+        Iterator<Row> rowIterator = bookSheet.rowIterator();
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            row.getCell(0).getStringCellValue();
+            String fieldName = row.getCell(1).getStringCellValue().trim();
+            String validateString = row.getCell(10).getStringCellValue();
+            for (String keyValidation : validateString.split("\\n")) {
+                System.out.println(keyValidation.trim());
             }
+        }
     }
-    
-    public void changeString(String abc){
-        abc="aggg";
+
+    public void changeString(String abc) {
+        abc = "aggg";
     }
-    
+
 }

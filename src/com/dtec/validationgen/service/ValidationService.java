@@ -107,15 +107,28 @@ public class ValidationService {
             Sheet bookSheet = book.getSheetAt(0);
             mapFunction = ioService.readFunction("mapping.korn");
             Iterator<Row> rowIterator = bookSheet.rowIterator();
-            String fieldName="",validateString="";
-            while(rowIterator.hasNext()){
-                Row row=rowIterator.next();
-                row.getCell(0).getStringCellValue();
-                fieldName=row.getCell(1).getStringCellValue().trim();
-                validateString=row.getCell(10).getStringCellValue();
+            String fieldName = "", validateString = "",resultCommand="",comment="";
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (row.getCell(0).getStringCellValue().trim() == null || row.getCell(0).getStringCellValue().trim() == "") {
+                    break;
+                }
+                fieldName = row.getCell(1).getStringCellValue().trim();
+                validateString = row.getCell(10).getStringCellValue();
+                for (String keyValidation : validateString.split("\\n")) {
+                    getKeyMap(mapFunction);
+                    if(keyValidation.contains("")){
+                        
+                    }else{
+                        
+                    }
+                    comment+="--"+keyValidation+"\n";
+                }
+                resultCommand+="--"+fieldName+"\n"+comment;
+                comment="";
             }
 
-            return "";
+            return resultCommand+"\n\n";
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(parent,
                     "Error Gen Content",
@@ -125,6 +138,11 @@ public class ValidationService {
             return "{content}";
         }
 
+    }
+    
+    public String getKeyMap(Map<String, String> mapFunction){
+                            
+        return "";
     }
 
     public String getTemplatePath() {
