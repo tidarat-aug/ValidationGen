@@ -28,9 +28,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class IoService {
 
     public void writeExcel(XSSFWorkbook workBook, String fileName) throws IOException {
-        FileOutputStream outPut = new FileOutputStream(new File(fileName));
-        workBook.write(outPut);
-        outPut.close();
+        try (FileOutputStream outPut = new FileOutputStream(new File(fileName));) {
+            workBook.write(outPut);
+        }
     }
 
     public XSSFWorkbook readExcel(String fileName) throws IOException {
@@ -40,7 +40,7 @@ public class IoService {
 
     public void writeFile(StringBuilder data, String filePath) {
         try (FileWriter fileWriter = new FileWriter(filePath, true);
-            PrintWriter printWriter = new PrintWriter(fileWriter);) {
+                PrintWriter printWriter = new PrintWriter(fileWriter);) {
             printWriter.write(data.toString());
         } catch (IOException ex) {
             Logger.getLogger(IoService.class.getName()).log(Level.SEVERE, null, ex);
@@ -69,7 +69,7 @@ public class IoService {
         String data = "", temp = "";
         while ((temp = input.readLine()) != null) {
             data += temp;
-            data+="\n";
+            data += "\n";
         }
         return data;
     }

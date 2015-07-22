@@ -7,11 +7,13 @@ package com.dtec.validationgen.service;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -24,8 +26,8 @@ public class ValidationService {
     private String templatePath;
     private String logField;
     private String stagingName;
-    private String keyParameter="";
-    private String keyFields="";
+    private String keyParameter = "";
+    private String keyFields = "";
     private IoService ioService = new IoService();
     private final Integer FIELD_NUM = 1;
     private final Integer FIELD_DES = 10;
@@ -38,10 +40,6 @@ public class ValidationService {
 
     public void genarate() {
         try {
-            XSSFWorkbook book = ioService.readExcel(templatePath);
-            Sheet bookSheet = book.getSheetAt(0);
-            Map<String, String> mapFunction = new HashMap<String, String>();
-            mapFunction = ioService.readFunction("mapping.korn");
             addBeforeBegin();
             addProcedureFunction();
             addInBeginAndBottom();
@@ -59,7 +57,7 @@ public class ValidationService {
             String[] logkeys = logField.split(",");
             for (String key : logkeys) {
                 String[] splitKey = key.split("  ");
-                String keyNow=splitKey[0].trim();
+                String keyNow = splitKey[0].trim();
                 keyParameter += "v_" + keyNow + ",";
                 keyFields += "v_" + keyNow + " := v_cs1_rec." + keyNow + ";\n";
                 transformKey += "v_" + key + ";\n";
@@ -100,10 +98,33 @@ public class ValidationService {
                 .replaceAll("\\{content\\}", addContent())
                 .replaceAll("\\{keyFields\\}", keyFields));
     }
-    
-    public String addContent(){
-        
-        return "";
+
+    public String addContent() {
+        try {
+            XSSFWorkbook book = ioService.readExcel(templatePath);
+            Map<String, String> mapFunction = new HashMap<String, String>();
+
+            Sheet bookSheet = book.getSheetAt(0);
+            mapFunction = ioService.readFunction("mapping.korn");
+            Iterator<Row> rowIterator = bookSheet.rowIterator();
+            String fieldName="",validateString="";
+            while(rowIterator.hasNext()){
+                Row row=rowIterator.next();
+                row.getCell(0).getStringCellValue();
+                fieldName=row.getCell(1).getStringCellValue().trim();
+                validateString=row.getCell(10).getStringCellValue();
+            }
+
+            return "";
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(parent,
+                    "Error Gen Content",
+                    "Can't update Content",
+                    JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(ValidationService.class.getName()).log(Level.SEVERE, null, ex);
+            return "{content}";
+        }
+
     }
 
     public String getTemplatePath() {
