@@ -52,7 +52,7 @@ public class IoService {
         BufferedReader input = new BufferedReader(new FileReader(namePath));
         String data = "";
         while ((data = input.readLine()) != null) {
-            map.put(data.split("#")[0], data.split("#")[1]);
+            map.put(data.split("#")[0].trim(), data.split("#")[1].trim());
         }
         return map;
     }
