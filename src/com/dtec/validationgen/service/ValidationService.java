@@ -24,6 +24,8 @@ public class ValidationService {
     private String templatePath;
     private String logField;
     private String stagingName;
+    private String keyParameter;
+    private String keyFields;
     private IoService ioService = new IoService();
     private final Integer FIELD_NUM = 1;
     private final Integer FIELD_DES = 10;
@@ -31,10 +33,8 @@ public class ValidationService {
     private JFrame parent;
 
     public ValidationService(JFrame parent) {
-        this.parent=parent;
+        this.parent = parent;
     }
-    
-    
 
     public void genarate() {
         try {
@@ -52,7 +52,6 @@ public class ValidationService {
     }
 
     private void addBeforeBegin() throws IOException {
-        dataBuffer.append(ioService.readFile("template.beforeBegin"));
         String transformKey = "";
         String transformError = "";
         String transformErrorBegin = "";
@@ -60,7 +59,9 @@ public class ValidationService {
             String[] logkeys = logField.split(",");
             for (String key : logkeys) {
                 String[] splitKey = key.split("  ");
-                transformKey += "v_" + key + ";\n";
+                keyParameter += "v_" + splitKey[0] + ",";
+                keyFields += "v_" + splitKey[0] + " := v_cs1_rec." + splitKey[0] + ";\n";
+                transformKey += "v_" + splitKey[0] + ";\n";
                 transformErrorBegin += "v_errdtl_rec." + splitKey[0] + " := " + splitKey[0] + ";\n";
                 if (splitKey[1].toUpperCase().contains("NUMBER")) {
                     transformError += splitKey[0] + " IN " + "NUMBER,";
@@ -70,48 +71,31 @@ public class ValidationService {
             }
         } else {
             String[] logkeys = logField.split("  ");
+            keyFields += "v_" + logField + " := v_cs1_rec." + logField + ";\n";
+            keyParameter += "v_" + logField + ",";
             transformKey = "v_" + logField + ";\n";
             transformError += logkeys[0] + " IN " + (logkeys[1].toUpperCase().contains("NUMBER") ? "NUMBER" : "VARCHAR2") + ",";
             transformErrorBegin = "v_errdtl_rec." + logkeys[0] + " := " + logkeys[0] + ";\n";
         }
-
-        dataBuffer = new StringBuilder(dataBuffer.toString()
+        keyParameter = keyParameter.substring(0, keyParameter.length() - 1);
+        dataBuffer.append(ioService.readFile("template.beforeBegin")
                 .replaceAll("\\{tableName\\}", stagingName)
                 .replaceAll("\\{keyFields\\}", transformKey)
                 .replaceAll("\\{keyError\\}", transformError.substring(0, transformError.length() - 1))
                 .replaceAll("\\{keyErrorBegin\\}", transformErrorBegin));
     }
-    
+
     private void addProcedureFunction() throws IOException {
         dataBuffer.append("\n");
-        
         dataBuffer.append(ioService.readFile("template.plFunction")
+                .replaceAll("\\{keyParameter\\}", keyParameter)
                 .replaceAll("\\{tableName\\}", stagingName));
-        
-        
     }
 
     public void addInBeginAndBottom() throws IOException {
         //{tableName},{keyFields},{content}
-        StringBuilder inFunctionKeep = new StringBuilder();
-        inFunctionKeep.append(ioService.readFile("template.InBegin"));
-        String keyFields="";
-        
-        if (logField.contains(",")) {
-            String[] logkeys = logField.split(",");
-            for (String key : logkeys) {
-                String[] splitKey = key.split("  ");
-                keyFields+="v_"+splitKey[0]+" := v_cs1_rec."+splitKey[0]+";\n";
-            }
-        } else {
-            keyFields+="v_"+logField+" := v_cs1_rec."+logField+";\n";
-        }     
-        
-        inFunctionKeep = new StringBuilder(inFunctionKeep.toString()
-                .replaceAll("\\{tableName\\}", stagingName)
+        dataBuffer.append(ioService.readFile("template.InBegin").replaceAll("\\{tableName\\}", stagingName)
                 .replaceAll("\\{keyFields\\}", keyFields));
-
-        dataBuffer.append(inFunctionKeep);
     }
 
     public String getTemplatePath() {
@@ -162,5 +146,4 @@ public class ValidationService {
         this.parent = parent;
     }
 
-    
 }
