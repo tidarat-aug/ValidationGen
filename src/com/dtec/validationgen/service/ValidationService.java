@@ -24,8 +24,8 @@ public class ValidationService {
     private String templatePath;
     private String logField;
     private String stagingName;
-    private String keyParameter;
-    private String keyFields;
+    private String keyParameter="";
+    private String keyFields="";
     private IoService ioService = new IoService();
     private final Integer FIELD_NUM = 1;
     private final Integer FIELD_DES = 10;
@@ -59,14 +59,15 @@ public class ValidationService {
             String[] logkeys = logField.split(",");
             for (String key : logkeys) {
                 String[] splitKey = key.split("  ");
-                keyParameter += "v_" + splitKey[0] + ",";
-                keyFields += "v_" + splitKey[0] + " := v_cs1_rec." + splitKey[0] + ";\n";
+                String keyNow=splitKey[0].trim();
+                keyParameter += "v_" + keyNow + ",";
+                keyFields += "v_" + keyNow + " := v_cs1_rec." + keyNow + ";\n";
                 transformKey += "v_" + key + ";\n";
-                transformErrorBegin += "v_errdtl_rec." + splitKey[0] + " := " + splitKey[0] + ";\n";
+                transformErrorBegin += "v_errdtl_rec." + keyNow + " := " + keyNow + ";\n";
                 if (splitKey[1].toUpperCase().contains("NUMBER")) {
-                    transformError += splitKey[0] + " IN " + "NUMBER,";
+                    transformError += keyNow + " IN " + "NUMBER,";
                 } else {
-                    transformError += splitKey[0] + " IN " + "VARCHAR2,";
+                    transformError += keyNow + " IN " + "VARCHAR2,";
                 }
             }
         } else {
