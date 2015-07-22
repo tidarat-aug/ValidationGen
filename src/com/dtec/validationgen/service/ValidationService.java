@@ -61,7 +61,7 @@ public class ValidationService {
                 String[] splitKey = key.split("  ");
                 keyParameter += "v_" + splitKey[0] + ",";
                 keyFields += "v_" + splitKey[0] + " := v_cs1_rec." + splitKey[0] + ";\n";
-                transformKey += "v_" + splitKey[0] + ";\n";
+                transformKey += "v_" + key + ";\n";
                 transformErrorBegin += "v_errdtl_rec." + splitKey[0] + " := " + splitKey[0] + ";\n";
                 if (splitKey[1].toUpperCase().contains("NUMBER")) {
                     transformError += splitKey[0] + " IN " + "NUMBER,";
