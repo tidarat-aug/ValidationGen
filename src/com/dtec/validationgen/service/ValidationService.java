@@ -45,6 +45,8 @@ public class ValidationService {
             addBeforeBegin();
             addProcedureFunction();
             addInBeginAndBottom();
+            keyFields="";
+            keyParameter="";
             ioService.writeFile(dataBuffer, stagingName + "_result_korn.txt");
         } catch (IOException ex) {
             Logger.getLogger(ValidationService.class.getName()).log(Level.SEVERE, null, ex);
@@ -72,8 +74,8 @@ public class ValidationService {
             }
         } else {
             String[] logkeys = logField.split("  ");
-            keyFields += "v_" + logField + " := v_cs1_rec." + logField + ";\n";
-            keyParameter += "v_" + logField + ",";
+            keyFields += "v_" + logkeys[0] + " := v_cs1_rec." + logkeys[0] + ";\n";
+            keyParameter += "v_" + logkeys[0] + ",";
             transformKey = "v_" + logField + ";\n";
             transformError += logkeys[0] + " IN " + (logkeys[1].toUpperCase().contains("NUMBER") ? "NUMBER" : "VARCHAR2") + ",";
             transformErrorBegin = "v_errdtl_rec." + logkeys[0] + " := " + logkeys[0] + ";\n";

@@ -14,6 +14,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -38,6 +39,14 @@ public class IoService {
     }
 
     public void writeFile(StringBuilder data, String filePath) {
+        File file=new File(filePath);
+        if(file.exists()){
+            try {
+                Files.delete(file.toPath());
+            } catch (IOException ex) {
+                Logger.getLogger(IoService.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         try (FileWriter fileWriter = new FileWriter(filePath, true);
                 PrintWriter printWriter = new PrintWriter(fileWriter);) {
             printWriter.write(data.toString());
