@@ -7,6 +7,7 @@ package com.dtec.validationgen.test;
 
 import com.dtec.validationgen.service.IoService;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -42,6 +43,13 @@ public class TestService {
                 System.out.println(keyValidation.trim());
             }
         }
+        String keyValidation="'abc' or 'ddd'";
+        System.out.println(keyValidation.indexOf("'") + 1 +" "+keyValidation.indexOf("'", keyValidation.indexOf("'")+1));
+        String[]param={"","",""};
+        param[0] = keyValidation.substring(keyValidation.indexOf("'") + 1, keyValidation.indexOf("'", keyValidation.indexOf("'")+1));
+        param[1] = keyValidation.substring(keyValidation.indexOf("'", keyValidation.indexOf("'", keyValidation.indexOf("'")+1)+1) + 1, keyValidation.lastIndexOf("'"));
+        
+        System.out.println(Arrays.asList(param));
     }
 
     public void changeString(String abc) {

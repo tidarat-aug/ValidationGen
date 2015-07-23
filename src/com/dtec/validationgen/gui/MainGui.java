@@ -6,7 +6,6 @@
 package com.dtec.validationgen.gui;
 
 import com.dtec.validationgen.service.ValidationService;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;

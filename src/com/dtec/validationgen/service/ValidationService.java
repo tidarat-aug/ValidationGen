@@ -6,8 +6,10 @@
 package com.dtec.validationgen.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,28 +109,46 @@ public class ValidationService {
             Sheet bookSheet = book.getSheetAt(0);
             mapFunction = ioService.readFunction("mapping.korn");
             Iterator<Row> rowIterator = bookSheet.rowIterator();
-            String fieldName = "", validateString = "",resultCommand="",comment="";
+            String fieldName = "", validateString = "", resultCommand = "", comment = "", callfunction = "", keyFunction = "";
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
                 if (row.getCell(0).getStringCellValue().trim() == null || row.getCell(0).getStringCellValue().trim() == "") {
                     break;
                 }
+                callfunction = "PROCEDURE P_validate";
                 fieldName = row.getCell(1).getStringCellValue().trim();
                 validateString = row.getCell(10).getStringCellValue();
-                for (String keyValidation : validateString.split("\\n")) {
-                    getKeyMap(mapFunction);
-                    if(keyValidation.contains("")){
-                        
-                    }else{
-                        
+                String[] validateStrings = validateString.split("\\n");
+                List<String> params = new ArrayList<>();
+                for (String keyValidation : validateStrings) {
+                    keyFunction = getKeyMap(mapFunction, keyValidation);
+                    callfunction += "_" + keyFunction;
+                    comment += "--" + keyValidation + "\n";
+                    if (keyFunction.equals("expectvalue")) {
+                        params.add(keyValidation.substring(keyValidation.indexOf("'") + 1, keyValidation.lastIndexOf("'")));
+                    } else if (keyFunction.equals("expectvalues")) {
+                        params.add(keyValidation.substring(keyValidation.indexOf("'") + 1, keyValidation.indexOf("'", keyValidation.indexOf("'") + 1)));
+                        params.add(keyValidation.substring(keyValidation.indexOf("'", keyValidation.indexOf("'", keyValidation.indexOf("'") + 1) + 1) + 1, keyValidation.lastIndexOf("'")));
+                    } else if (keyFunction.equals("intemplate")) {
+                        params.add(keyValidation.substring(keyValidation.indexOf("'") + 1, keyValidation.lastIndexOf("'")));
+                    } else if (keyFunction.equals("length")) {
+                        params.add(keyValidation.substring(keyValidation.indexOf("'") + 1, keyValidation.lastIndexOf("'")));
                     }
-                    comment+="--"+keyValidation+"\n";
                 }
-                resultCommand+="--"+fieldName+"\n"+comment;
-                comment="";
+                callfunction += "(v_cs1_rec." + fieldName + ",'" + fieldName + "'";
+                if(params.size()<=0){
+                    callfunction+=");";
+                }else if(params.size()==1){
+                    callfunction+=",'"+params.get(0)+"');";
+                }else if(params.size()==2){
+                    callfunction+=",'"+params.get(0)+"'"+",'"+params.get(1)+"');";
+                }
+                    
+                resultCommand += "--" + fieldName + "\n" + comment + "BEGIN\n" + callfunction + "\nEND;\n\n";
+                comment = "";
             }
 
-            return resultCommand+"\n\n";
+            return resultCommand + "\n\n";
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(parent,
                     "Error Gen Content",
@@ -139,10 +159,15 @@ public class ValidationService {
         }
 
     }
-    
-    public String getKeyMap(Map<String, String> mapFunction){
-                            
-        return "";
+
+    public String getKeyMap(Map<String, String> mapFunction, String word) {
+        String result = "";
+        if (word.contains("or")) {
+            return mapFunction.get("or");
+        } else if (word.contains("value must be")) {
+
+        }
+        return mapFunction.get("or");
     }
 
     public String getTemplatePath() {

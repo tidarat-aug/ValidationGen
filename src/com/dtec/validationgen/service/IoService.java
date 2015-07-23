@@ -14,7 +14,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,7 +51,8 @@ public class IoService {
         BufferedReader input = new BufferedReader(new FileReader(namePath));
         String data = "";
         while ((data = input.readLine()) != null) {
-            map.put(data.split("#")[0].trim(), data.split("#")[1].trim());
+            String[] temp=data.split("#");
+            map.put(temp[0].trim(), temp[1].trim());
         }
         return map;
     }
