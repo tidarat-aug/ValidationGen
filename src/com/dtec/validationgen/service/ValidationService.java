@@ -161,13 +161,28 @@ public class ValidationService {
     }
 
     public String getKeyMap(Map<String, String> mapFunction, String word) {
-        String result = "";
-        if (word.contains("or")) {
+        if(word.contains("null")){
+            return mapFunction.get("null");
+        }else if(word.contains("'CCYYMMDD'")){
+            return mapFunction.get("'CCYYMMDD'");
+        }else if(word.contains("'CCYY'")){
+            return mapFunction.get("'CCYY'");
+        }else if(word.contains("'CCMMDD'")){
+            return mapFunction.get("'CCMMDD'");
+        }else if(word.contains("'HHMMSS'")){
+            return mapFunction.get("'HHMMSS'");
+        }else if(word.contains("'MM'")){
+            return mapFunction.get("'MM'");
+        }else if(word.contains("or")){
             return mapFunction.get("or");
-        } else if (word.contains("value must be")) {
-
+        }else if(word.contains("in")){
+            return mapFunction.get("in");
+        }else if(word.contains("digits")){
+            return mapFunction.get("digits");
+        }else if(word.contains("value must be")){
+            return mapFunction.get("value must be");
         }
-        return mapFunction.get("or");
+        return "";
     }
 
     public String getTemplatePath() {
